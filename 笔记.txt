@@ -1,0 +1,56 @@
+Spring框架注解
+……
+
+PageInfo分页信息类
+MyBatis 分页插件 PageHelper 提供的工具类
+封装分页查询的结果，包含当前页数据、总记录数、总页数、当前页码等所有分页相关信息
+PageHelper 和 PageInfo 的配合实现分页查询
+    @GetMapping("/selectPage")
+    public Result selectPage(@RequestParam(defaultValue = "1") Integer pageNum,
+                             @RequestParam(defaultValue = "10") Integer pageSize,
+                             @RequestParam(required = false) String name){
+        PageInfo<User> pageInfo=userService.selectPage(pageNum,pageSize,name);
+        return Result.success(pageInfo);
+    }
+
+    @Resource
+    private UserMapper userMapper;
+    public PageInfo<User> selectPage(Integer pageNum, Integer pageSize) {
+        PageHelper.startPage(pageNum, pageSize);
+        List<User> list = userMapper.selectAll();
+        return PageInfo.of(list);
+    }
+
+    @Repository
+    public interface UserMapper {
+        List<User> selectAll();
+    }
+
+    <select id="selectAll" resultType="com.example.entity.User">
+        select * from `user`
+    </select>
+
+
+JavaScript (Vue)
+
+const data = reactive({ ... })响应式对象，通过 Vue 的 reactive 函数创建, 集中存储当前组件的状态数据
+const data=reactive({
+  name:null,
+  tableData:[],
+  total:0
+})
+
+
+const load = () => { ... }箭头函数，被赋值给常量 load，封装了数据加载的逻辑——向后端发送请求，获取用户列表，然后将返回的数据更新到 data.tableData 和 data.total 中
+const load = () => {
+  request.get('/user/selectPage').then(res=>{
+    if(res.code==='200'){
+      data.tableData=res.data?.list
+      data.total=res.data?.total
+    }
+    else {
+      ElMessage.error(res.msg)
+    }
+  })
+}
+
